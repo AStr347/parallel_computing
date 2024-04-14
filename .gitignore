@@ -1,0 +1,5 @@
+.vscode/
+build/
+screens/
+*dll
+*exe
