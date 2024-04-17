@@ -72,6 +72,37 @@ void single_thread(const f16 ** const B, const u8 row_cnt, const u8 column_cnt){
     std::cout << "single_time = " << (1000.0 * (c_end - c_start) / CLOCKS_PER_SEC) << " ms" << std::endl;
 }
 
+static
+void multi_thread(const f16 ** const B, const u8 row_cnt, const u8 column_cnt)
+{
+    cout << "\n\n\nmulti thread" << endl;
+    vector<thread*> thds;
+
+    /* init minimals for evry column by 1st line */
+    f16* minimals = new f16[column_cnt];
+    const f16* first_line = B[0];
+    for(u8 j = 0; j < column_cnt; j++){
+        minimals[j] = first_line[j];
+    }
+
+    const clock_t c_start = clock();
+
+    for(u8 i = 0; i < column_cnt; i++){
+        thread* t = new thread(minimal_in_column, B, row_cnt, i, &minimals[i]);
+        thds.push_back(t);
+    }
+    for(auto t: thds){
+        if(t->joinable()){
+            t->join();
+        }
+        delete t;
+    }
+
+    const clock_t c_end = clock();
+    cout << endl;
+    cout << "multi_time = " << (1000.0 * (c_end - c_start) / CLOCKS_PER_SEC) << " ms" << endl;
+}
+
 /**
  * find minimal column value for some matrix
 */
@@ -151,6 +182,7 @@ int lr3_main(void){
     std::cout << std::endl << std::endl;
 
     single_thread((const f16 ** const )B, ROW_CNT, COLUMN_CNT);
+    multi_thread((const f16 ** const )B, ROW_CNT, COLUMN_CNT);
     omp_thread((const f16 ** const )B, ROW_CNT, COLUMN_CNT);
 
     return 0;
