@@ -99,7 +99,14 @@ void multi_thread(const f16 ** const B, const u8 row_cnt, const u8 column_cnt)
     }
 
     const clock_t c_end = clock();
+    
+    cout << endl << endl << "results" << endl;
+    for(u8 j = 0; j < column_cnt; j++){
+        cout << minimals[j] << '\t';
+    }
     cout << endl;
+
+    delete[] minimals;
     cout << "multi_time = " << (1000.0 * (c_end - c_start) / CLOCKS_PER_SEC) << " ms" << endl;
 }
 
