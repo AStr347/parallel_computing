@@ -31,7 +31,7 @@ void line_sum(const u8 * const line, const u32 clumn_cnt, u32* result)
 static
 void single_thread(const u8 ** const B, const u32 row_cnt, const u32 clumn_cnt)
 {
-    cout << "single thread" << endl;
+    cout << "\n\n\nsingle thread" << endl;
     u32* results = new u32[row_cnt];
     for(u8 i = 0; i < row_cnt; i++){
         results[i] = 0;
@@ -51,21 +51,27 @@ void single_thread(const u8 ** const B, const u32 row_cnt, const u32 clumn_cnt)
 static
 void multi_thread(const u8 ** const B, const u32 row_cnt, const u32 clumn_cnt)
 {
-    cout << "multi thread" << endl;
+    cout << "\n\n\nmulti thread" << endl;
     u32* results = new u32[row_cnt];
     for(u8 i = 0; i < row_cnt; i++){
         results[i] = 0;
     }
 
-    thread* last_thread;
+    vector<thread*> thds;
 
     const clock_t c_start = clock();
     for(u32 i = 0; i < row_cnt; i+=2){
-        last_thread = new thread(line_sum, B[i], clumn_cnt, &results[i]);
+        thread* t = new thread(line_sum, B[i], clumn_cnt, &results[i]);
+        thds.push_back(t);
     }
 
     /* wait threads */
-    last_thread->join();
+    for(auto t: thds){
+        if(t->joinable()){
+            t->join();
+        }
+        delete t;
+    }
     const clock_t c_end = clock();
 
     delete[] results;
@@ -75,7 +81,7 @@ void multi_thread(const u8 ** const B, const u32 row_cnt, const u32 clumn_cnt)
 
 static
 void omp_thread(const u8 ** const B, const u32 row_cnt, const u32 clumn_cnt){
-    cout << "omp thread" << endl;
+    cout << "\n\n\nomp thread" << endl;
     u32* results = new u32[row_cnt];
     for(u8 i = 0; i < row_cnt; i++){
         results[i] = 0;

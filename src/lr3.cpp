@@ -17,12 +17,23 @@ using namespace std;
 #define ROW_CNT     (5)
 #define COLUMN_CNT  (5)
 
+static
+void minimal_in_column(const f16 ** const B, const u8 row_cnt, const u8 index, f16 * const minimal){
+    for(u8 i = 1; i < row_cnt; i++){
+        const f16 value = B[i][index];
+        const f16 now = *minimal;
+        if(value < now){
+            *minimal = value;
+        }
+    }
+}
+
 /**
  * find minimal column value for some matrix
 */
 static
 void single_thread(const f16 ** const B, const u8 row_cnt, const u8 column_cnt){
-    cout << "single thread" << endl;
+    cout << "\n\n\nsingle thread" << endl;
 
     /* init minimals for evry column by 1st line */
     f16* minimals = new f16[column_cnt];
@@ -36,13 +47,10 @@ void single_thread(const f16 ** const B, const u8 row_cnt, const u8 column_cnt){
     {
         for(u8 i = 1; i < row_cnt; i++){
             for(u8 j = 0; j < column_cnt; j++){
-                /* critical for save access to minimals */
                 {
                     const f16 value = B[i][j];
                     const f16 now = minimals[j];
                     if(value < now){
-                        const u16 id = omp_get_thread_num();
-                        //cout << "thd_id: " << id << " found new minimal value in: " << (u16)j << " column was: " << now << " new: " << value << endl;
                         minimals[j] = value;
                     }
                 }
@@ -69,7 +77,7 @@ void single_thread(const f16 ** const B, const u8 row_cnt, const u8 column_cnt){
 */
 static
 void omp_thread(const f16 ** const B, const u8 row_cnt, const u8 column_cnt){
-    cout << "omp thread" << endl;
+    cout << "\n\n\nomp thread" << endl;
 
     /* init minimals for evry column by 1st line */
     f16* minimals = new f16[column_cnt];
@@ -83,20 +91,21 @@ void omp_thread(const f16 ** const B, const u8 row_cnt, const u8 column_cnt){
     #pragma omp parallel
     {
         #pragma omp for
-        for(u8 i = 1; i < row_cnt; i++){
-            for(u8 j = 0; j < column_cnt; j++){
-                /* critical for save access to minimals */
-                #pragma omp critical
-                {
-                    const f16 value = B[i][j];
-                    const f16 now = minimals[j];
-                    if(value < now){
-                        const u16 id = omp_get_thread_num();
-                        //cout << "thd_id: " << id << " found new minimal value in: " << (u16)j << " column was: " << now << " new: " << value << endl;
-                        minimals[j] = value;
-                    }
-                }
-            }    
+        for(u8 i = 0; i < column_cnt; i++){
+            minimal_in_column(B, row_cnt, i, &minimals[i]);
+            // for(u8 j = 0; j < column_cnt; j++){
+            //     /* critical for save access to minimals */
+            //     #pragma omp critical
+            //     {
+            //         const f16 value = B[i][j];
+            //         const f16 now = minimals[j];
+            //         if(value < now){
+            //             // const u16 id = omp_get_thread_num();
+            //             // cout << "thd_id: " << id << " found new minimal value in: " << (u16)j << " column was: " << now << " new: " << value << endl;
+            //             minimals[j] = value;
+            //         }
+            //     }
+            // }    
         }
     }
     
